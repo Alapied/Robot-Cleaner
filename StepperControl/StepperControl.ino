@@ -1,4 +1,11 @@
 
+
+//Include Libaries
+#include <Adafruit_NeoPixel.h>
+
+//BootChecks
+bool PiBoot;
+
 //Argparsing
 const byte numChars = 32;
 char receivedChars[numChars];
@@ -18,7 +25,11 @@ const int dirleftPin = 5;
 const int steprightPin = 4; 
 const int dirrightPin = 6; 
 
-
+//NeoPixels
+#define PIN 5
+#define NUM_LEDS 8
+//create a NeoPixel strip
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, PIN, NEO_GRB + NEO_KHZ800);
 
 void recv() {
     static boolean recvInProgress = false;
@@ -65,54 +76,29 @@ void parseData() {      // split the data into its parts
 
     return messageFromPC;
 }
-void Forward(int Count) {
-          while (Count > 0){
-          digitalWrite(dirleftPin,HIGH); // Enables the motor to move in a particular direction
-          digitalWrite(dirrightPin,HIGH); // Enables the motor to move in a particular direction
-          digitalWrite(stepleftPin,HIGH); 
-          digitalWrite(steprightPin,HIGH); 
-          delayMicroseconds(500); 
-          digitalWrite(stepleftPin,LOW); 
-          digitalWrite(steprightPin,LOW); 
-          delayMicroseconds(500);
-          Count = Count -1;
-      }
+void PiBootCheck(){
+  String Pi;
+  Pi = Serial.read();
+  if (Pi == 'Pi ON'){
+    PiBoot = true;
+  }
 }
-void Left90(int Count) {
-          //On the spot rotation
-          digitalWrite(dirleftPin,LOW); // Enables the motor to move in a particular direction
-          digitalWrite(dirrightPin,HIGH); // Enables the motor to move in a particular direction
-          digitalWrite(stepleftPin,HIGH); 
-          digitalWrite(steprightPin,HIGH); 
-          delayMicroseconds(500); 
-          digitalWrite(stepleftPin,LOW); 
-          digitalWrite(steprightPin,LOW); 
-          delayMicroseconds(500);
           
-}
-void Right90(int Count) {
-         //On the spot rotation
-          digitalWrite(dirleftPin,HIGH); // Enables the motor to move in a particular direction
-          digitalWrite(dirrightPin,LOW); // Enables the motor to move in a particular direction
-          digitalWrite(stepleftPin,HIGH); 
-          digitalWrite(steprightPin,HIGH); 
-          delayMicroseconds(500); 
-          digitalWrite(stepleftPin,LOW); 
-          digitalWrite(steprightPin,LOW); 
-          delayMicroseconds(500);
-          
-}
 void stepper(String messageFromPC, int Count) {
     if (messageFromPC == "Forward"){
           Forward(Count);
     }else if (messageFromPC == "Right90") {
-      Right90();
+      Right90(Count);
     }else if (messageFromPC == "Left90") {
-     Left90();
+     Left90(Count);
     }
     
 }
 void setup() {
+  PiBoot = false;
+  // start the Pixel strip and blank it out
+  strip.begin();
+  strip.show();
   // Sets the two pins as Outputs
   pinMode(stepleftPin,OUTPUT); 
   pinMode(dirleftPin,OUTPUT);
@@ -120,6 +106,10 @@ void setup() {
   pinMode(dirrightPin,OUTPUT);
 }
 void loop() {
+    while (PiBoot == false){
+       LEDBOOT();
+       PiBootCheck();
+    }
     recv();
     if (newData == true) {
         strcpy(tempChars, receivedChars);
