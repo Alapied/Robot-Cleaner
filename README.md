@@ -3,7 +3,7 @@ This is The Systems Enginnering Project to make an autonmous roomba that will pi
 
 ## Credits
 ### Opencv-arm control:
-https://github.com/ashishtilakarora/Robot-Arm-OpenCV (modified)
+https://github.com/ashishtilakarora/Robot-Arm-OpenCV (cloned and modified for purpose)
 
 ### Installations and gathering Libaries:
  Adrian Rosebrock and his blog PyImageSearch
