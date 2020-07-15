@@ -5,7 +5,9 @@
 
 //BootChecks
 bool PiBoot;
-
+const int powercheck = 7;
+const int sigMainPin = 9;
+const int sigStepPin = 10;
 //Argparsing
 const byte numChars = 32;
 char receivedChars[numChars];
@@ -26,11 +28,17 @@ const int steprightPin = 4;
 const int dirrightPin = 6; 
 
 //NeoPixels
-#define PIN 5
+#define PIN 8
 #define NUM_LEDS 8
 //create a NeoPixel strip
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, PIN, NEO_GRB + NEO_KHZ800);
-
+void PiBootCheck(){
+  String Pi;
+  Pi = Serial.read();
+  if (Pi == 'Pi ON'){
+    PiBoot = true;
+  }
+}
 void recv() {
     static boolean recvInProgress = false;
     static byte ndx = 0;
@@ -76,34 +84,35 @@ void parseData() {      // split the data into its parts
 
     return messageFromPC;
 }
-void PiBootCheck(){
-  String Pi;
-  Pi = Serial.read();
-  if (Pi == 'Pi ON'){
-    PiBoot = true;
-  }
-}
+
           
 void stepper(String messageFromPC, int Count) {
     if (messageFromPC == "Forward"){
           Forward(Count);
     }else if (messageFromPC == "Right90") {
-      Right90(Count);
+      RightStill(Count);
     }else if (messageFromPC == "Left90") {
-     Left90(Count);
+     LeftStill(Count);
     }
-    
+    else{
+      
+      }
 }
 void setup() {
   PiBoot = false;
   // start the Pixel strip and blank it out
   strip.begin();
   strip.show();
-  // Sets the two pins as Outputs
+  // Sets the two stepper pin pairs as Outputs
   pinMode(stepleftPin,OUTPUT); 
   pinMode(dirleftPin,OUTPUT);
   pinMode(steprightPin,OUTPUT); 
   pinMode(dirrightPin,OUTPUT);
+
+  // Sets the controls for power relays
+  pinMode(sigMainPin,OUTPUT); 
+  pinMode(sigStepPin,OUTPUT);
+  digitalWrite(sigMainPin,HIGH); //Turns on the raspberry pi and keeps the power on Like a flip flop switch
 }
 void loop() {
     while (PiBoot == false){

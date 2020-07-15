@@ -11,8 +11,8 @@ void Forward(int Count) {
           Count = Count -1;
       }
 }
-void Left90(int Count) {
-          //On the spot rotation
+void LeftStill(int Count) {
+          //On the spot rotation 
           digitalWrite(dirleftPin,LOW); // Enables the motor to move in a particular direction
           digitalWrite(dirrightPin,HIGH); // Enables the motor to move in a particular direction
           digitalWrite(stepleftPin,HIGH); 
@@ -23,7 +23,7 @@ void Left90(int Count) {
           delayMicroseconds(500);
           
 }
-void Right90(int Count) {
+void RightStill(int Count) {
          //On the spot rotation
           digitalWrite(dirleftPin,HIGH); // Enables the motor to move in a particular direction
           digitalWrite(dirrightPin,LOW); // Enables the motor to move in a particular direction
