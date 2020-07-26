@@ -15,16 +15,16 @@ maxRightDistance = 0
 ## open the serial port that your ardiono
 ## is connected to.
 def setup():
-	GPIO.setmode(GPIO.BOARD)
+	GPIO.setmode(GPIO.BCM)
 	#Set up Left Ultrasonic sensor
-	TRIGLeft = 23
-	ECHOLeft = 24
+	TRIGLeft = 17
+	ECHOLeft = 27
 	GPIO.setup(TRIGLeft,GPIO.OUT)
 	GPIO.setup(ECHOLeft,GPIO.IN)
 	GPIO.output(TRIGLeft, False)
 	#Set up right Ultrasonic sensor 
-	TRIGRight = 25
-	ECHORight = 26
+	TRIGRight = 22
+	ECHORight = 23
 	GPIO.setup(TRIGRight,GPIO.OUT)
 	GPIO.setup(ECHORight,GPIO.IN)
 	GPIO.output(TRIGRight, False)
@@ -34,13 +34,13 @@ def setup():
 	
 def serialSetup():
 	ser = serial.Serial("/dev/ttyUSB0", 9600)
+	ser.flush()
 	while True:
-		try:
-			ser.write("Pi ON")
-		except:
-			print("Error Serial not connected")
-			GPIO.output(Error, True)
-		if ser.read == "Connected"
+		ser.write("Pi ON".encode('utf-8'))
+		if ser.in_waiting > 0:
+			line = ser.readline().decode('utf-8').rstrip()
+			ser.flush()
+		if line == "Connected"
 			break
 	
 			
@@ -86,10 +86,16 @@ def serialSend(message, int, float):
 	ser.write(message,int,float)
 	ser.write(endmarker)
 	
+def serialreceive():
+	if ser.in_waiting > 0:
+		line = ser.readline().decode('utf-8').rstrip()
+		ser.flush()
+		return line
+			
 def move(Dir, rot):
 	'''Moves the specified stepper to the amount of steps.    
 	'''
-    if Dir == 'Forward':
+	if Dir == 'Forward':
 		serialSend(Dir, rot)
 		print(Dir)
 	elif Dir == 'Left'
@@ -145,13 +151,11 @@ def distancetests():
 	print ('Distance Tests Done')
 	
 if __name__ == '__main__':
-	readInput("Start?{y/n}")
-	if usrInput == 'y'
-		setup()
-		serialSetup()				  
-		time.sleep(5)
-		distancetests()
-		time.sleep(5)
-		steppertest()
-		time.sleep(5)
-		LEDtests()
+	setup()
+	serialSetup()				  
+	time.sleep(5)
+	distancetests()
+	time.sleep(5)
+	steppertest()
+	time.sleep(5)
+	LEDtests()
