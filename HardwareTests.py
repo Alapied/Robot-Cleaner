@@ -4,7 +4,7 @@ import time
 import argparse
 import math
 import serial
-import random
+
 
 Error = 5
 
@@ -33,7 +33,7 @@ def setup():
 	GPIO.output(Error, False)
 	
 def serialSetup():
-	ser = serial.Serial("/dev/cu.usbmodem1421", 9600)
+	ser = serial.Serial("/dev/ttyUSB0", 9600)
 	while True:
 		try:
 			ser.write("Pi ON")
@@ -55,7 +55,7 @@ def distancedetectLeft():
 	pulse_duration = pulse_end - pulse_start
 	distanceLeft = pulse_duration x 17150
 	distanceLeft = round(distanceLeft, 2)
-	return distanceLeft
+	print(distanceLeft)
 	
 def distancedetectRight():
 	GPIO.output(TRIGRight, True)
@@ -68,36 +68,18 @@ def distancedetectRight():
 	pulse_duration = pulse_end - pulse_start
 	distanceRight = pulse_duration x 17150
 	distanceRight = round(distanceRight, 2)
-	return distanceRight
+	print(distanceRight)
 
 
-def distancechecks():
-	distancedetectLeft()
-	distancedetectRight()
-	if (distanceLeft < maxLeftDistance or distanceLeft > maxLeftDistance):
-		print("Left OBJECT")
-		distancedetectLeft()
-		distancedetectRight()
-		
-		if (distanceLeft > distanceRight)
-		  move('Forward')
-		elif (distanceLeft < distanceRight) {
-		  move('Right')
-	elif (distanceRight < maxRightDistance or distanceRight > maxRightDistance):
-		print("Left OBJECT")
-		distancedetectLeft()
-		distancedetectRight()
-		
-		if (distanceLeft < distanceRight)
-			move('Forward', 1)
-		elif (distanceLeft > distanceRight) {
-			move('Left', 1)
-	elif (distanceRight > maxRightDistance and distanceLeft > maxLeftDistance):
-		move("Backward", 1)
-	
-	
-	
-	
+def ledchange(mode):
+	if mode == Red:
+		serialSend(led, 1, float)
+	if mode == Green:
+		serialSend(led, 0, float)
+	if mode == Blue:
+		serialSend(led, 2, float)
+	if mode == Boot:
+		serialSend(led, 3, float)
 	
 def serialSend(message, int, float):
 	ser.write(startmarker)
@@ -116,36 +98,60 @@ def move(Dir, rot):
 	elif Dir == 'Right'
 		serialSend(Dir, rot)
 		print(Dir)
+	elif Dir == 'Backward'
+		serialSend(Dir, rot)
+		print(Dir)
+	
 #Very simply returns the user's input
 def readInput(prompt):
 	usrInput = input(prompt)
 	return usrInput
 
-def switchcase(argument):
-		switcher = { 
-		0: "Forward", 
-		1: "Left", 
-		2: "Right", 
-		3: "Aroundleft",
-		4: "Aroundright",
-	} 
-  
-	# get() method of dictionary data type returns  
-	# value of passed argument if it is present  
-	# in dictionary otherwise second argument will 
-	# be assigned as default value of passed argument 
-	return switcher.get(argument, "nothing") 
+def steppertest():
+	print("Beginning Stepper Serial Tests")
+	time.sleep(1)
 	
-def autonomous
-	serialSend('Led',0)
-	while True:
-		distancechecks()
-		no = randrange(5) 
-		chosen = switchcase(no)
-		print(chosen)
-		move(chosen, 1)
+	ledchange(Red)
+	time.sleep(1)
+	
+	ledchange(Green)
+	time.sleep(1)
+	
+	ledchange(Blue)
+	time.sleep(1)
+	
+	
+	
+def LEDtests():
+	print("Beginning LED Serial Tests")
+	time.sleep(1)
+	
+	move("Forward", 1)
+	time.sleep(1)
+	
+	move("Backward", 1)
+	time.sleep(1)
+	
+	move("Left", 1)
+	time.sleep(1)
+	
+	move("Right", 1)
+	time.sleep(1)
+	
+def distancetests():
+	print("Starting distance test")
+	distancedetectRight()
+	distancedetectLeft()
+	print ('Distance Tests Done')
+	
 if __name__ == '__main__':
-	setup()
-	serialSetup()
-                              
-                              
+	readInput("Start?{y/n}")
+	if usrInput == 'y'
+		setup()
+		serialSetup()				  
+		time.sleep(5)
+		distancetests()
+		time.sleep(5)
+		steppertest()
+		time.sleep(5)
+		LEDtests()

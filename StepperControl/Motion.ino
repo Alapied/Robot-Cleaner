@@ -34,3 +34,14 @@ void RightStill(int Count) {
           digitalWrite(steprightPin,LOW); 
           delayMicroseconds(500);
 }
+void RightAround(int Count){
+          digitalWrite(dirleftPin,HIGH); // Enables the motor to move in a particular direction
+          digitalWrite(dirrightPin,HIGH); // Enables the motor to move in a particular direction
+          digitalWrite(stepleftPin,HIGH); 
+          digitalWrite(steprightPin,HIGH); 
+          delayMicroseconds(250); 
+          digitalWrite(stepleftPin,LOW); 
+          delayMicroseconds(250);
+          digitalWrite(steprightPin,LOW);
+          delayMicroseconds(500);
+}

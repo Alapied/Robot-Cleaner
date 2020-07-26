@@ -1,5 +1,4 @@
 
-
 //Include Libaries
 #include <Adafruit_NeoPixel.h>
 
@@ -8,6 +7,7 @@ bool PiBoot;
 const int powercheck = 7;
 const int sigMainPin = 9;
 const int sigStepPin = 10;
+const int Errorpin = 13;
 //Argparsing
 const byte numChars = 32;
 char receivedChars[numChars];
@@ -34,10 +34,16 @@ const int dirrightPin = 6;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, PIN, NEO_GRB + NEO_KHZ800);
 void PiBootCheck(){
   String Pi;
-  Pi = Serial.read();
-  if (Pi == 'Pi ON'){
-    PiBoot = true;
-  }
+  if (Serial.available()){
+    Pi = Serial.read();
+    if (Pi == 'Pi ON'){
+      PiBoot = true;
+      Serial.write("Connected");
+      if (Errorpin == true){
+        PiBoot = false;
+      }
+      }
+      }
 }
 void recv() {
     static boolean recvInProgress = false;
@@ -85,7 +91,15 @@ void parseData() {      // split the data into its parts
     return messageFromPC;
 }
 
-          
+void recieveOther(String messageFromPC, int Count) {
+  if (messageFromPC = "Led"){
+    led(messageFromPC, Count);
+  }else if (messageFromPC = "PowerStep"){
+    PowerStep(Count);
+  }else if (messageFromPC = "PowerPi")
+    Shutdown();
+}
+
 void stepper(String messageFromPC, int Count) {
     if (messageFromPC == "Forward"){
           Forward(Count);
@@ -95,10 +109,11 @@ void stepper(String messageFromPC, int Count) {
      LeftStill(Count);
     }
     else{
-      
+      recieveOther(messageFromPC, Count);
       }
 }
 void setup() {
+  Serial.begin(9600);
   PiBoot = false;
   // start the Pixel strip and blank it out
   strip.begin();
@@ -115,6 +130,7 @@ void setup() {
   digitalWrite(sigMainPin,HIGH); //Turns on the raspberry pi and keeps the power on Like a flip flop switch
 }
 void loop() {
+    //do not continue with anything until Pi is cofirmed to be booted (and show lights)
     while (PiBoot == false){
        LEDBOOT();
        PiBootCheck();
@@ -127,5 +143,5 @@ void loop() {
         parseData();
         newData == false;
         stepper(messageFromPC,count);
-}
+    }
 }

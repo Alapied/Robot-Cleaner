@@ -1,12 +1,21 @@
 void Shutdown() {
   bool Pi;
   Pi = digitalRead(powercheck);
-  if (Pi = 0){
+  if (Pi = false){
+    delay(4);
     digitalWrite(sigMainPin,LOW);
   }
 }
 
 
-void PowerStep(){
-  
+void PowerStep(int Count){
+  switch (Count){ 
+        case 0: 
+            digitalWrite(sigStepPin, HIGH);
+            break; 
+        case 1: 
+            digitalWrite(sigStepPin, LOW);
+            break; 
+         
+    };
 }
