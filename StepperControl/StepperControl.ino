@@ -4,6 +4,7 @@
 
 //BootChecks
 bool PiBoot;
+bool confirm;
 const int powercheck = 7;
 const int sigMainPin = 9;
 const int sigStepPin = 10;
@@ -32,19 +33,7 @@ const int dirrightPin = 6;
 #define NUM_LEDS 8
 //create a NeoPixel strip
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, PIN, NEO_GRB + NEO_KHZ800);
-void PiBootCheck(){
-  String Pi;
-  if (Serial.available()){
-    Pi = Serial.read();
-    if (Pi == 'Pi ON'){
-      PiBoot = true;
-      Serial.write("Connected");
-      if (Errorpin == true){
-        PiBoot = false;
-      }
-      }
-      }
-}
+
 void recv() {
     static boolean recvInProgress = false;
     static byte ndx = 0;
@@ -88,9 +77,44 @@ void parseData() {      // split the data into its parts
     strtokIndx = strtok(NULL, ",");
     floatFromPC = atof(strtokIndx);     // convert this part to a float
 
-    return messageFromPC;
 }
-
+void PiBootCheck(){
+  //tests serial comms and determines if Pi is running
+  String Pi;
+  
+  recv();
+    if (newData == true) {
+        strcpy(tempChars, receivedChars);
+            // this temporary copy is necessary to protect the original data
+            //   because strtok() used in parseData() replaces the commas with \0
+        parseData();
+        newData == false;
+  Pi = messageFromPC;
+    if (Pi == "Pi ON"){
+      PiBoot = true;
+      Serial.println("Connected");
+      while (confirm == false){
+        recv();
+        if (newData == true) {
+        strcpy(tempChars, receivedChars);
+            // this temporary copy is necessary to protect the original data
+            //   because strtok() used in parseData() replaces the commas with \0
+        parseData();
+        newData == false;
+        Pi = messageFromPC;
+          if (Pi == "confirm"){
+            confirm = true;
+            break;
+          }
+        }
+      }
+      //if (Errorpin == true){
+        //PiBoot = false;
+      //}
+      }
+      
+    }
+}
 void recieveOther(String messageFromPC, int Count) {
   if (messageFromPC = "Led"){
     led(messageFromPC, Count);
@@ -131,7 +155,7 @@ void setup() {
 }
 void loop() {
     //do not continue with anything until Pi is cofirmed to be booted (and show lights)
-    while (PiBoot == false){
+    while (PiBoot == false and confirm == false){
        LEDBOOT();
        PiBootCheck();
     }

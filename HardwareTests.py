@@ -1,30 +1,34 @@
 
-import RPi.GPIO
+import RPi.GPIO as GPIO
 import time
 import argparse
 import math
 import serial
 
-
+GPIO.setwarnings(False)
 Error = 5
 
 maxLeftDistance = 0
 maxRightDistance = 0
+line = ""
+startmarker = "<"
+endmarker = ">"
+TRIGLeft = 17
+ECHOLeft = 27
+TRIGRight = 22
+ECHORight = 23
 
-#### ARDUINO SETUP
-## open the serial port that your ardiono
-## is connected to.
+
+
 def setup():
 	GPIO.setmode(GPIO.BCM)
 	#Set up Left Ultrasonic sensor
-	TRIGLeft = 17
-	ECHOLeft = 27
+	
 	GPIO.setup(TRIGLeft,GPIO.OUT)
 	GPIO.setup(ECHOLeft,GPIO.IN)
 	GPIO.output(TRIGLeft, False)
 	#Set up right Ultrasonic sensor 
-	TRIGRight = 22
-	ECHORight = 23
+	
 	GPIO.setup(TRIGRight,GPIO.OUT)
 	GPIO.setup(ECHORight,GPIO.IN)
 	GPIO.output(TRIGRight, False)
@@ -32,18 +36,39 @@ def setup():
 	GPIO.setup(Error,GPIO.OUT)
 	GPIO.output(Error, False)
 	
+#### ARDUINO SETUP
+## open the serial port that your ardiono
+## is connected to.
 def serialSetup():
+	global ser
 	ser = serial.Serial("/dev/ttyUSB0", 9600)
 	ser.flush()
-	while True:
-		ser.write("Pi ON".encode('utf-8'))
-		if ser.in_waiting > 0:
-			line = ser.readline().decode('utf-8').rstrip()
-			ser.flush()
-		if line == "Connected"
-			break
+	serialtest()
 	
+	
+def serialSend(message, int, float):
+	sdata = startmarker + message + "," + str(int) + "," + str(float) + endmarker
+	ser.write(sdata.encode('utf-8'))
+	
+	
+def serialreceive():
+	global line
+	if ser.in_waiting > 0:
+		line = ser.readline().decode('utf-8').rstrip()
+		ser.flush()
+		return line		
+		
+def serialtest():
+	while True:
+		serialSend("Pi ON" , 0 ,1.1)
+		time.sleep(1)
+		serialreceive()
+		print(line)
+		if line == "Connected":
+			serialSend("confirm", 1 ,1.1)
+			break	
 			
+#######################################
 def distancedetectLeft():
 	GPIO.output(TRIGLeft, True)
 	time.sleep(0.00001)
@@ -53,7 +78,7 @@ def distancedetectLeft():
 	while GPIO.input(ECHOLeft)==1:
 		pulse_end = time.time()
 	pulse_duration = pulse_end - pulse_start
-	distanceLeft = pulse_duration x 17150
+	distanceLeft = pulse_duration * 17150
 	distanceLeft = round(distanceLeft, 2)
 	print(distanceLeft)
 	
@@ -66,46 +91,37 @@ def distancedetectRight():
 	while GPIO.input(ECHORight)==1:
 		pulse_end = time.time()
 	pulse_duration = pulse_end - pulse_start
-	distanceRight = pulse_duration x 17150
+	distanceRight = pulse_duration * 17150
 	distanceRight = round(distanceRight, 2)
 	print(distanceRight)
 
 
 def ledchange(mode):
-	if mode == Red:
-		serialSend(led, 1, float)
-	if mode == Green:
-		serialSend(led, 0, float)
-	if mode == Blue:
-		serialSend(led, 2, float)
-	if mode == Boot:
-		serialSend(led, 3, float)
+	if mode == 'Red':
+		serialSend('led', 1, 1.1)
+	if mode == 'Green':
+		serialSend('led', 0, 1.2)
+	if mode == 'Blue':
+		serialSend('led', 2, 1.3)
+	if mode == 'Boot':
+		serialSend('led', 3, 1.4)
 	
-def serialSend(message, int, float):
-	ser.write(startmarker)
-	ser.write(message,int,float)
-	ser.write(endmarker)
-	
-def serialreceive():
-	if ser.in_waiting > 0:
-		line = ser.readline().decode('utf-8').rstrip()
-		ser.flush()
-		return line
+
 			
 def move(Dir, rot):
 	'''Moves the specified stepper to the amount of steps.    
 	'''
 	if Dir == 'Forward':
-		serialSend(Dir, rot)
+		serialSend(Dir, rot,1.1)
 		print(Dir)
-	elif Dir == 'Left'
-		serialSend(Dir, rot)
+	elif Dir == 'Left':
+		serialSend(Dir, rot, 1.2)
 		print(Dir)
-	elif Dir == 'Right'
-		serialSend(Dir, rot)
+	elif Dir == 'Right':
+		serialSend(Dir, rot, 1.3)
 		print(Dir)
-	elif Dir == 'Backward'
-		serialSend(Dir, rot)
+	elif Dir == 'Backward':
+		serialSend(Dir, rot, 1.4)
 		print(Dir)
 	
 #Very simply returns the user's input
@@ -113,23 +129,24 @@ def readInput(prompt):
 	usrInput = input(prompt)
 	return usrInput
 
-def steppertest():
-	print("Beginning Stepper Serial Tests")
-	time.sleep(1)
-	
-	ledchange(Red)
-	time.sleep(1)
-	
-	ledchange(Green)
-	time.sleep(1)
-	
-	ledchange(Blue)
-	time.sleep(1)
-	
-	
-	
 def LEDtests():
 	print("Beginning LED Serial Tests")
+	time.sleep(1)
+	
+	ledchange('Red')
+	time.sleep(1)
+	
+	ledchange('Green')
+	time.sleep(1)
+	
+	ledchange('Blue')
+	time.sleep(1)
+	
+	
+	
+def steppertest():
+	
+	print("Beginning Stepper Serial Tests")
 	time.sleep(1)
 	
 	move("Forward", 1)
@@ -146,6 +163,7 @@ def LEDtests():
 	
 def distancetests():
 	print("Starting distance test")
+	time.sleep(1)
 	distancedetectRight()
 	distancedetectLeft()
 	print ('Distance Tests Done')
@@ -156,6 +174,7 @@ if __name__ == '__main__':
 	time.sleep(5)
 	distancetests()
 	time.sleep(5)
-	steppertest()
-	time.sleep(5)
 	LEDtests()
+	
+	time.sleep(5)
+	steppertest()
