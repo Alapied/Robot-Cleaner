@@ -1,30 +1,33 @@
 
-import RPi.GPIO
+import RPi.GPIO as GPIO
 import time
 import argparse
 import math
 import serial
 import random
 
-Error = 5
 
+
+Error = 5
 maxLeftDistance = 0
 maxRightDistance = 0
+line = ""
+startmarker = "<"
+endmarker = ">"
+TRIGLeft = 17
+ECHOLeft = 27
+TRIGRight = 22
+ECHORight = 23
 
-#### ARDUINO SETUP
-## open the serial port that your ardiono
-## is connected to.
+
+
 def setup():
 	GPIO.setmode(GPIO.BOARD)
 	#Set up Left Ultrasonic sensor
-	TRIGLeft = 23
-	ECHOLeft = 24
 	GPIO.setup(TRIGLeft,GPIO.OUT)
 	GPIO.setup(ECHOLeft,GPIO.IN)
 	GPIO.output(TRIGLeft, False)
 	#Set up right Ultrasonic sensor 
-	TRIGRight = 25
-	ECHORight = 26
 	GPIO.setup(TRIGRight,GPIO.OUT)
 	GPIO.setup(ECHORight,GPIO.IN)
 	GPIO.output(TRIGRight, False)
@@ -32,17 +35,37 @@ def setup():
 	GPIO.setup(Error,GPIO.OUT)
 	GPIO.output(Error, False)
 	
+#### ARDUINO SETUP
+## open the serial port that your ardiono
+## is connected to.
 def serialSetup():
-	ser = serial.Serial("/dev/cu.usbmodem1421", 9600)
-	while True:
-		try:
-			ser.write("Pi ON")
-		except:
-			print("Error Serial not connected")
-			GPIO.output(Error, True)
-		if ser.read == "Connected"
-			break
+	global ser
+	ser = serial.Serial("/dev/ttyUSB0", 9600)
+	ser.flush()
+	serialtest()
 	
+	
+def serialSend(message, int, float):
+	sdata = startmarker + message + "," + str(int) + "," + str(float) + endmarker
+	ser.write(sdata.encode('utf-8'))
+	
+	
+def serialreceive():
+	global line
+	if ser.in_waiting > 0:
+		line = ser.readline().decode('utf-8').rstrip()
+		ser.flush()
+		return line		
+		
+def serialtest():
+	while True:
+		serialSend("Pi ON" , 0 ,1.1)
+		time.sleep(1)
+		serialreceive()
+		print(line)
+		if line == "Connected":
+			serialSend("confirm", 1 ,1.1)
+			break	
 			
 def distancedetectLeft():
 	GPIO.output(TRIGLeft, True)
@@ -53,7 +76,7 @@ def distancedetectLeft():
 	while GPIO.input(ECHOLeft)==1:
 		pulse_end = time.time()
 	pulse_duration = pulse_end - pulse_start
-	distanceLeft = pulse_duration x 17150
+	distanceLeft = pulse_duration * 17150
 	distanceLeft = round(distanceLeft, 2)
 	return distanceLeft
 	
@@ -66,7 +89,7 @@ def distancedetectRight():
 	while GPIO.input(ECHORight)==1:
 		pulse_end = time.time()
 	pulse_duration = pulse_end - pulse_start
-	distanceRight = pulse_duration x 17150
+	distanceRight = pulse_duration * 17150
 	distanceRight = round(distanceRight, 2)
 	return distanceRight
 
@@ -96,13 +119,7 @@ def distancechecks():
 		move("Backward", 1)
 	
 	
-	
-	
-	
-def serialSend(message, int, float):
-	ser.write(startmarker)
-	ser.write(message,int,float)
-	ser.write(endmarker)
+
 	
 def move(Dir, rot):
 	'''Moves the specified stepper to the amount of steps.    
@@ -110,12 +127,24 @@ def move(Dir, rot):
     if Dir == 'Forward':
 		serialSend(Dir, rot)
 		print(Dir)
-	elif Dir == 'Left'
+	elif Dir == 'Left':
 		serialSend(Dir, rot)
 		print(Dir)
-	elif Dir == 'Right'
+	elif Dir == 'Right':
 		serialSend(Dir, rot)
 		print(Dir)
+	elif Dir == 'Aroundright':
+		serialSend(Dir, rot)
+		print(Dir)	
+	elif Dir == 'Aroundleft':
+		serialSend(Dir, rot)
+		print(Dir)	
+	else:
+		GPIO.output(Error, True)
+		print("Error, Unknown movement called")
+		time.sleep(5)
+		GPIO.output(Error, False)
+		
 #Very simply returns the user's input
 def readInput(prompt):
 	usrInput = input(prompt)
@@ -144,8 +173,8 @@ def autonomous
 		chosen = switchcase(no)
 		print(chosen)
 		move(chosen, 1)
+
 if __name__ == '__main__':
 	setup()
-	serialSetup()
-                              
-                              
+	serialSetup()     
+ 

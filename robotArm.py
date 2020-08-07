@@ -26,7 +26,7 @@ def move(servo, angle):
         ser.write(chr(servo))
         ser.write(chr(angle))
     else:
-        print "Servo angle must be an integer between 0 and 180.\n"
+        print( "Servo angle must be an integer between 0 and 180.\n")
 
 
 refPt = [0,0,0,0] #[x1,y1,x2,y2]
@@ -221,9 +221,9 @@ while(1):
         #cv2.circle(circled,calibrationPointsLRTB[i],5,(0,255,0),2)
     cv2.circle(circled,center,5,(0,0,255),2)
     cv2.imshow('running',circled)
-    servoLR = int(((center[0]-calibrationPointsLRTB[1])/(DistLtoR/1.0))*180) #LR
-    servoTB = int(((center[1]-calibrationPointsLRTB[2])/(DistTtoB/1.0))*180) #TB
-    servoFB = int(((radius-calibrationPointsFB[1])/(DistFtoB/1.0))*180)
+    servoLR = int(((center[0]-calibrationPointsLRTB[1])/(DistLtoR/1.0))*180) #Left Right
+    servoTB = int(((center[1]-calibrationPointsLRTB[2])/(DistTtoB/1.0))*180) #Top Bottom
+    servoFB = int(((radius-calibrationPointsFB[1])/(DistFtoB/1.0))*180) #Forward Back
     
     move(1, servoLR)
     
